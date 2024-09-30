@@ -1,12 +1,8 @@
 package com.example.yolo_deploy
 
-import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.database.Cursor
 import android.os.Bundle
-import android.os.Environment
 import android.view.View
 import android.widget.Button
 import android.widget.TableLayout
@@ -16,13 +12,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.programminghut.yolo_deploy.R
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.layout.Document
 import com.itextpdf.layout.element.Paragraph
-import java.io.File
-import java.io.FileOutputStream
+import com.itextpdf.layout.element.Table
+import com.programminghut.yolo_deploy.R
+import java.io.OutputStream
 
 class ReportActivity : AppCompatActivity() {
 
@@ -44,16 +40,29 @@ class ReportActivity : AppCompatActivity() {
 
         // Set up download button
         downloadReportButton.setOnClickListener {
-            checkAndRequestPermissions() // Check for permissions before generating the PDF
+            createFileInDownloads() // Trigger file creation process
         }
     }
 
-    private fun checkAndRequestPermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), REQUEST_WRITE_STORAGE)
-        } else {
-            generatePDF()  // Generate the PDF if permission is granted
+    private fun createFileInDownloads() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/pdf"
+            putExtra(Intent.EXTRA_TITLE, "report.pdf") // Default name for the PDF file
+        }
+        startActivityForResult(intent, CREATE_FILE_REQUEST_CODE)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == CREATE_FILE_REQUEST_CODE && resultCode == RESULT_OK) {
+            data?.data?.also { uri ->
+                // Use the Uri to write the PDF content
+                contentResolver.openOutputStream(uri)?.let { outputStream ->
+                    generatePDF(outputStream) // Pass the outputStream to generate the PDF
+                    Toast.makeText(this, "Report downloaded to Downloads", Toast.LENGTH_LONG).show()
+                }
+            }
         }
     }
 
@@ -110,9 +119,8 @@ class ReportActivity : AppCompatActivity() {
         return textView
     }
 
-    private fun generatePDF() {
-        val filePath = "${Environment.getExternalStorageDirectory()}/Download/report.pdf" // Save path
-        val pdfWriter = PdfWriter(FileOutputStream(filePath))
+    private fun generatePDF(outputStream: OutputStream) {
+        val pdfWriter = PdfWriter(outputStream)
         val pdfDocument = PdfDocument(pdfWriter)
         val document = Document(pdfDocument)
 
@@ -121,7 +129,7 @@ class ReportActivity : AppCompatActivity() {
         document.add(Paragraph("\n")) // Add some space
 
         // Add table headers
-        val table = com.itextpdf.layout.element.Table(floatArrayOf(1f, 2f, 2f)) // Define column widths
+        val table = Table(floatArrayOf(1f, 2f, 2f)) // Define column widths
         table.addCell("Try Number")
         table.addCell("Detected Objects")
         table.addCell("Number of Objects")
@@ -145,23 +153,9 @@ class ReportActivity : AppCompatActivity() {
 
         document.add(table) // Add the table to the document
         document.close()
-
-        Toast.makeText(this, "Report downloaded: $filePath", Toast.LENGTH_LONG).show()
-    }
-
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_WRITE_STORAGE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                generatePDF() // Generate the PDF if permission is granted
-            } else {
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
-            }
-        }
     }
 
     companion object {
-        private const val REQUEST_WRITE_STORAGE = 1
+        private const val CREATE_FILE_REQUEST_CODE = 2
     }
 }
