@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Predict">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_alignParentTop="true"
+        android:layout_above="@+id/selectImageButton"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:background="#8BC34A"
+        android:contentDescription="@string/image_desc" />
+
+    <Button
+        android:id="@+id/selectImageButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Image"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="120dp"
+        android:onClick="selectImage" />
+
+    <Button
+        android:id="@+id/predict"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Predict"
+        android:layout_above="@+id/objects"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="80dp" />
+
+    <Button
+        android:id="@+id/objects"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Objects"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="40dp"
+        android:visibility="gone" />
+</RelativeLayout>

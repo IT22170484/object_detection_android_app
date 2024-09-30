@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Yolo Deploy</string>
+    <string name="image_desc">Image for prediction display area</string>
+    <!-- Add other strings here -->
+</resources>
